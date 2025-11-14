@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-10">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Detail Transaksi #{{ $transaksi->idtransaksi }}</h4>
@@ -63,23 +63,52 @@
                                             <td>{{ $transaksi->idpesanan }}</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Menu:</strong></td>
-                                            <td>{{ $transaksi->pesanan->menu->namamenu }}</td>
-                                        </tr>
-                                        <tr>
                                             <td><strong>Pelanggan:</strong></td>
                                             <td>{{ $transaksi->pesanan->pelanggan->namapelanggan }}</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Jumlah:</strong></td>
-                                            <td>{{ $transaksi->pesanan->jumlah }} porsi</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Harga Satuan:</strong></td>
-                                            <td>Rp {{ number_format($transaksi->pesanan->menu->harga, 0, ',', '.') }}</td>
+                                            <td><strong>Jumlah Item:</strong></td>
+                                            <td>{{ $transaksi->pesanan->detailPesanans->count() }} item(s)</td>
                                         </tr>
                                     </table>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detail Item Pesanan -->
+                    <div class="card bg-light mb-3">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-utensils"></i> Detail Item Pesanan</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Menu</th>
+                                            <th class="text-center">Jumlah</th>
+                                            <th class="text-end">Harga Satuan</th>
+                                            <th class="text-end">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($transaksi->pesanan->detailPesanans as $detail)
+                                        <tr>
+                                            <td>{{ $detail->menu->namamenu }}</td>
+                                            <td class="text-center">{{ $detail->jumlah }}x</td>
+                                            <td class="text-end">Rp {{ number_format($detail->menu->harga, 0, ',', '.') }}</td>
+                                            <td class="text-end">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="3" class="text-end">Total:</th>
+                                            <th class="text-end">Rp {{ number_format($transaksi->pesanan->subtotal, 0, ',', '.') }}</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -97,45 +126,17 @@
                                 </div>
                                 <div class="col-md-4">
                                     <strong>Telepon:</strong><br>
-                                    {{ $transaksi->pesanan->pelanggan->telepon }}
-                                </div>
-                                <div class="col-md-4">
-                                    <strong>Alamat:</strong><br>
-                                    {{ $transaksi->pesanan->pelanggan->alamat }}
+                                    {{ $transaksi->pesanan->pelanggan->nohp ?? '-' }}
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Detail Menu -->
-                    <div class="card bg-light">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="fas fa-utensils"></i> Detail Menu</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <strong>Nama Menu:</strong><br>
-                                    {{ $transaksi->pesanan->menu->namamenu }}
-                                </div>
-                                <div class="col-md-6">
-                                    <strong>Harga Menu:</strong><br>
-                                    Rp {{ number_format($transaksi->pesanan->menu->harga, 0, ',', '.') }} / porsi
-                                </div>
-                            </div>
-                            @if($transaksi->pesanan->menu->deskripsi)
-                            <div class="row mt-3">
-                                <div class="col-12">
-                                    <strong>Deskripsi:</strong><br>
-                                    {{ $transaksi->pesanan->menu->deskripsi }}
-                                </div>
-                            </div>
-                            @endif
                         </div>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{{ route('transaksis.receipt', $transaksi) }}" class="btn btn-success" target="_blank">
+                            <i class="fas fa-print"></i> Cetak Struk
+                        </a>
                         <a href="{{ route('transaksis.edit', $transaksi) }}" class="btn btn-warning">
                             <i class="fas fa-edit"></i> Edit Transaksi
                         </a>

@@ -14,7 +14,7 @@ class TransaksiController extends Controller
      */
     public function index()
     {
-        $query = Transaksi::with(['pesanan.menu', 'pesanan.pelanggan']);
+        $query = Transaksi::with(['pesanan.detailPesanans.menu', 'pesanan.pelanggan']);
         
         // Filter by date if provided
         if (request('tanggal')) {
@@ -31,7 +31,7 @@ class TransaksiController extends Controller
      */
     public function create()
     {
-        $pesanans = Pesanan::whereDoesntHave('transaksi')->with(['menu', 'pelanggan'])->orderBy('created_at', 'desc')->get();
+        $pesanans = Pesanan::whereDoesntHave('transaksi')->with(['detailPesanans.menu', 'pelanggan'])->orderBy('created_at', 'desc')->get();
         return view('transaksis.create', compact('pesanans'));
     }
 
@@ -47,8 +47,8 @@ class TransaksiController extends Controller
         ]);
 
         // Ambil data pesanan untuk validasi total
-        $pesanan = Pesanan::with('menu')->findOrFail($request->idpesanan);
-        $calculatedTotal = $pesanan->menu->harga * $pesanan->jumlah;
+        $pesanan = Pesanan::with('detailPesanans.menu')->findOrFail($request->idpesanan);
+        $calculatedTotal = $pesanan->subtotal;
 
         // Validasi apakah total yang dikirim sama dengan total yang dihitung
         if ($request->total != $calculatedTotal) {
@@ -76,7 +76,7 @@ class TransaksiController extends Controller
      */
     public function show(Transaksi $transaksi)
     {
-        $transaksi->load(['pesanan.menu', 'pesanan.pelanggan']);
+        $transaksi->load(['pesanan.detailPesanans.menu', 'pesanan.pelanggan']);
         return view('transaksis.show', compact('transaksi'));
     }
 
@@ -85,7 +85,8 @@ class TransaksiController extends Controller
      */
     public function edit(Transaksi $transaksi)
     {
-        $pesanans = Pesanan::with(['menu', 'pelanggan'])->orderBy('created_at', 'desc')->get();
+        $pesanans = Pesanan::with(['detailPesanans.menu', 'pelanggan'])->orderBy('created_at', 'desc')->get();
+        $transaksi->load(['pesanan.detailPesanans.menu', 'pesanan.pelanggan']);
         return view('transaksis.edit', compact('transaksi', 'pesanans'));
     }
 
@@ -123,7 +124,7 @@ class TransaksiController extends Controller
      */
     public function printReceipt(Transaksi $transaksi)
     {
-        $transaksi->load(['pesanan.menu', 'pesanan.pelanggan', 'pesanan.user']);
+        $transaksi->load(['pesanan.detailPesanans.menu', 'pesanan.pelanggan', 'pesanan.user']);
         
         $pdf = Pdf::loadView('receipt.pdf', compact('transaksi'));
         $pdf->setPaper('A4', 'portrait');

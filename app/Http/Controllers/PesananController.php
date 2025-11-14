@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Pesanan;
 use App\Models\Menu;
 use App\Models\Pelanggan;
+use App\Models\DetailPesanan;
 
 class PesananController extends Controller
 {
@@ -14,7 +15,7 @@ class PesananController extends Controller
      */
     public function index()
     {
-        $pesanans = Pesanan::with(['menu', 'pelanggan', 'user'])->get();
+        $pesanans = Pesanan::with(['detailPesanans.menu', 'pelanggan', 'user'])->get();
         return view('pesanans.index', compact('pesanans'));
     }
 
@@ -34,14 +35,26 @@ class PesananController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'idmenu' => 'required|exists:menus,idmenu',
             'idpelanggan' => 'required|exists:pelanggans,idpelanggan',
-            'jumlah' => 'required|integer|min:1',
+            'items' => 'required|array|min:1',
+            'items.*.idmenu' => 'required|exists:menus,idmenu',
+            'items.*.jumlah' => 'required|integer|min:1',
         ]);
 
-        $request->merge(['iduser' => auth()->id()]);
+        // Buat pesanan baru
+        $pesanan = Pesanan::create([
+            'idpelanggan' => $request->idpelanggan,
+            'iduser' => auth()->id(),
+        ]);
 
-        Pesanan::create($request->all());
+        // Simpan detail pesanan
+        foreach ($request->items as $item) {
+            DetailPesanan::create([
+                'idpesanan' => $pesanan->idpesanan,
+                'idmenu' => $item['idmenu'],
+                'jumlah' => $item['jumlah'],
+            ]);
+        }
 
         return redirect()->route('pesanans.index')->with('success', 'Pesanan berhasil ditambahkan.');
     }
@@ -51,7 +64,7 @@ class PesananController extends Controller
      */
     public function show(Pesanan $pesanan)
     {
-        $pesanan->load(['menu', 'pelanggan', 'user']);
+        $pesanan->load(['detailPesanans.menu', 'pelanggan', 'user']);
         return view('pesanans.show', compact('pesanan'));
     }
 
@@ -62,6 +75,7 @@ class PesananController extends Controller
     {
         $menus = Menu::all();
         $pelanggans = Pelanggan::all();
+        $pesanan->load(['detailPesanans.menu']);
         return view('pesanans.edit', compact('pesanan', 'menus', 'pelanggans'));
     }
 
@@ -71,12 +85,28 @@ class PesananController extends Controller
     public function update(Request $request, Pesanan $pesanan)
     {
         $request->validate([
-            'idmenu' => 'required|exists:menus,idmenu',
             'idpelanggan' => 'required|exists:pelanggans,idpelanggan',
-            'jumlah' => 'required|integer|min:1',
+            'items' => 'required|array|min:1',
+            'items.*.idmenu' => 'required|exists:menus,idmenu',
+            'items.*.jumlah' => 'required|integer|min:1',
         ]);
 
-        $pesanan->update($request->all());
+        // Update pesanan
+        $pesanan->update([
+            'idpelanggan' => $request->idpelanggan,
+        ]);
+
+        // Hapus detail pesanan lama
+        $pesanan->detailPesanans()->delete();
+
+        // Simpan detail pesanan baru
+        foreach ($request->items as $item) {
+            DetailPesanan::create([
+                'idpesanan' => $pesanan->idpesanan,
+                'idmenu' => $item['idmenu'],
+                'jumlah' => $item['jumlah'],
+            ]);
+        }
 
         return redirect()->route('pesanans.index')->with('success', 'Pesanan berhasil diperbarui.');
     }

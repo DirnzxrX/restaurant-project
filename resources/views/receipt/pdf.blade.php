@@ -53,6 +53,31 @@
             margin-bottom: 3px;
         }
         
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        
+        table th, table td {
+            padding: 5px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        
+        table td.text-right {
+            text-align: right;
+        }
+        
+        table td.text-center {
+            text-align: center;
+        }
+        
         .total {
             border-top: 1px solid #333;
             padding-top: 5px;
@@ -101,25 +126,34 @@
             <span>Pelanggan:</span>
             <span>{{ $transaksi->pesanan->pelanggan->namapelanggan }}</span>
         </div>
-        <div class="row">
-            <span>Menu:</span>
-            <span>{{ $transaksi->pesanan->menu->namamenu }}</span>
-        </div>
-        <div class="row">
-            <span>Jumlah:</span>
-            <span>{{ $transaksi->pesanan->jumlah }}x</span>
-        </div>
-        <div class="row">
-            <span>Harga Satuan:</span>
-            <span>Rp {{ number_format($transaksi->pesanan->menu->harga, 0, ',', '.') }}</span>
-        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Menu</th>
+                    <th class="text-center">Jumlah</th>
+                    <th class="text-right">Harga Satuan</th>
+                    <th class="text-right">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($transaksi->pesanan->detailPesanans as $detail)
+                <tr>
+                    <td>{{ $detail->menu->namamenu }}</td>
+                    <td class="text-center">{{ $detail->jumlah }}x</td>
+                    <td class="text-right">Rp {{ number_format($detail->menu->harga, 0, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 
     <div class="section">
         <div class="section-title">RINCIAN PEMBAYARAN</div>
         <div class="row">
             <span>Subtotal:</span>
-            <span>Rp {{ number_format($transaksi->pesanan->menu->harga * $transaksi->pesanan->jumlah, 0, ',', '.') }}</span>
+            <span>Rp {{ number_format($transaksi->pesanan->subtotal, 0, ',', '.') }}</span>
         </div>
         <div class="row total">
             <span>TOTAL:</span>

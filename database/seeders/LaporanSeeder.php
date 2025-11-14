@@ -28,7 +28,7 @@ class LaporanSeeder extends Seeder
 
         // Create sample data
         $pelanggan = Pelanggan::create([
-            'namapelanggan' => 'John Doe',
+            'namapelanggan' => 'Jibran',
             'jeniskelamin' => 1,
             'nohp' => '08123456789',
             'alamat' => 'Jl. Test No. 123'
@@ -53,9 +53,8 @@ class LaporanSeeder extends Seeder
             'status' => 'lunas'
         ]);
 
-        // Create another sample without transaction
         $pelanggan2 = Pelanggan::create([
-            'namapelanggan' => 'Jane Smith',
+            'namapelanggan' => 'Dewa',
             'jeniskelamin' => 0,
             'nohp' => '08123456790',
             'alamat' => 'Jl. Test No. 456'

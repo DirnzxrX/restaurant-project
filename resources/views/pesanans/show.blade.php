@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-10">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Detail Pesanan</h4>
@@ -29,16 +29,6 @@
                     </div>
 
                     <div class="row mb-4">
-                        <div class="col-sm-3"><strong>Menu:</strong></div>
-                        <div class="col-sm-9">{{ $pesanan->menu->namamenu }}</div>
-                    </div>
-
-                    <div class="row mb-4">
-                        <div class="col-sm-3"><strong>Harga per Item:</strong></div>
-                        <div class="col-sm-9">Rp {{ number_format($pesanan->menu->harga, 0, ',', '.') }}</div>
-                    </div>
-
-                    <div class="row mb-4">
                         <div class="col-sm-3"><strong>Pelanggan:</strong></div>
                         <div class="col-sm-9">{{ $pesanan->pelanggan->namapelanggan }}</div>
                     </div>
@@ -49,13 +39,37 @@
                     </div>
 
                     <div class="row mb-4">
-                        <div class="col-sm-3"><strong>Jumlah:</strong></div>
-                        <div class="col-sm-9">{{ $pesanan->jumlah }}</div>
-                    </div>
-
-                    <div class="row mb-4">
-                        <div class="col-sm-3"><strong>Total Harga:</strong></div>
-                        <div class="col-sm-9 fs-5 text-primary">Rp {{ number_format($pesanan->jumlah * $pesanan->menu->harga, 0, ',', '.') }}</div>
+                        <div class="col-sm-3"><strong>Item Pesanan:</strong></div>
+                        <div class="col-sm-9">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Menu</th>
+                                            <th class="text-center">Jumlah</th>
+                                            <th class="text-end">Harga Satuan</th>
+                                            <th class="text-end">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($pesanan->detailPesanans as $detail)
+                                        <tr>
+                                            <td>{{ $detail->menu->namamenu }}</td>
+                                            <td class="text-center">{{ $detail->jumlah }}x</td>
+                                            <td class="text-end">Rp {{ number_format($detail->menu->harga, 0, ',', '.') }}</td>
+                                            <td class="text-end">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="3" class="text-end">Total Harga:</th>
+                                            <th class="text-end fs-5 text-primary">Rp {{ number_format($pesanan->subtotal, 0, ',', '.') }}</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row mb-4">

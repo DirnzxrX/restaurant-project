@@ -30,12 +30,10 @@
                                 @foreach($pesanans as $pesanan)
                                     <option value="{{ $pesanan->idpesanan }}" 
                                             data-subtotal="{{ $pesanan->subtotal }}"
-                                            data-menu="{{ $pesanan->menu->namamenu }}"
                                             data-pelanggan="{{ $pesanan->pelanggan->namapelanggan }}"
-                                            data-jumlah="{{ $pesanan->jumlah }}"
-                                            data-harga="{{ $pesanan->menu->harga }}"
+                                            data-items="{{ json_encode($pesanan->detailPesanans->map(function($dp) { return ['menu' => $dp->menu->namamenu, 'jumlah' => $dp->jumlah, 'harga' => $dp->menu->harga, 'subtotal' => $dp->subtotal]; })) }}"
                                             {{ old('idpesanan') == $pesanan->idpesanan ? 'selected' : '' }}>
-                                        {{ $pesanan->pelanggan->namapelanggan }} - {{ $pesanan->menu->namamenu }} ({{ $pesanan->jumlah }}x) - Rp {{ number_format($pesanan->subtotal, 0, ',', '.') }}
+                                        {{ $pesanan->pelanggan->namapelanggan }} - {{ $pesanan->detailPesanans->count() }} item(s) - Rp {{ number_format($pesanan->subtotal, 0, ',', '.') }}
                                     </option>
                                 @endforeach
                             </select>
@@ -49,18 +47,29 @@
                             <div class="card bg-light">
                                 <div class="card-body">
                                     <h6 class="card-title">Detail Pesanan</h6>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <p class="mb-1"><strong>Pelanggan:</strong> <span id="detail-pelanggan"></span></p>
-                                            <p class="mb-1"><strong>Menu:</strong> <span id="detail-menu"></span></p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <p class="mb-1"><strong>Jumlah:</strong> <span id="detail-jumlah"></span></p>
-                                            <p class="mb-1"><strong>Harga Satuan:</strong> Rp <span id="detail-harga"></span></p>
-                                        </div>
-                                    </div>
+                                    <p class="mb-2"><strong>Pelanggan:</strong> <span id="detail-pelanggan"></span></p>
                                     <hr>
-                                    <p class="mb-0"><strong>Total Harga:</strong> Rp <span id="detail-total"></span></p>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Menu</th>
+                                                    <th class="text-center">Jumlah</th>
+                                                    <th class="text-end">Harga Satuan</th>
+                                                    <th class="text-end">Subtotal</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="detail-items">
+                                                <!-- Items will be populated here -->
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th colspan="3" class="text-end">Total:</th>
+                                                    <th class="text-end" id="detail-total">Rp 0</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -140,9 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Elements untuk detail pesanan
     const detailPelanggan = document.getElementById('detail-pelanggan');
-    const detailMenu = document.getElementById('detail-menu');
-    const detailJumlah = document.getElementById('detail-jumlah');
-    const detailHarga = document.getElementById('detail-harga');
+    const detailItems = document.getElementById('detail-items');
     const detailTotal = document.getElementById('detail-total');
 
     function updatePesananDetail() {
@@ -152,15 +159,34 @@ document.addEventListener('DOMContentLoaded', function() {
             // Tampilkan detail pesanan
             pesananDetail.style.display = 'block';
             
-            // Update detail
+            // Update pelanggan
             detailPelanggan.textContent = selectedOption.dataset.pelanggan;
-            detailMenu.textContent = selectedOption.dataset.menu;
-            detailJumlah.textContent = selectedOption.dataset.jumlah;
-            detailHarga.textContent = formatNumber(selectedOption.dataset.harga);
-            detailTotal.textContent = formatNumber(selectedOption.dataset.subtotal);
             
-            // Update total harga
-            totalInput.value = selectedOption.dataset.subtotal;
+            // Parse items
+            const items = JSON.parse(selectedOption.dataset.items || '[]');
+            let total = 0;
+            
+            // Clear existing items
+            detailItems.innerHTML = '';
+            
+            // Add items to table
+            items.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.menu}</td>
+                    <td class="text-center">${item.jumlah}x</td>
+                    <td class="text-end">Rp ${formatNumber(item.harga)}</td>
+                    <td class="text-end">Rp ${formatNumber(item.subtotal)}</td>
+                `;
+                detailItems.appendChild(row);
+                total += item.subtotal;
+            });
+            
+            // Update total
+            detailTotal.textContent = 'Rp ' + formatNumber(total);
+            
+            // Update total harga input
+            totalInput.value = total;
             
             // Hitung kembalian
             calculateKembalian();

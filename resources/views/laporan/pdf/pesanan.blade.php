@@ -19,8 +19,8 @@
                 <th>No</th>
                 <th>Tanggal</th>
                 <th>Pelanggan</th>
-                <th>Menu</th>
-                <th>Jumlah</th>
+                <th>Items</th>
+                <th>Total Harga</th>
                 <th>Status</th>
             </tr>
         </thead>
@@ -30,8 +30,16 @@
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $psn->created_at->format('d/m/Y H:i') }}</td>
                     <td>{{ $psn->pelanggan->namapelanggan ?? '-' }}</td>
-                    <td>{{ $psn->menu->namamenu ?? '-' }}</td>
-                    <td>{{ $psn->jumlah }}</td>
+                    <td>
+                        @if($psn->detailPesanans->count() > 0)
+                            @foreach($psn->detailPesanans as $detail)
+                                • {{ $detail->menu->namamenu ?? '-' }} ({{ $detail->jumlah }}x) - Rp {{ number_format($detail->subtotal, 0, ',', '.') }}<br>
+                            @endforeach
+                        @else
+                            -
+                        @endif
+                    </td>
+                    <td>Rp {{ number_format($psn->subtotal, 0, ',', '.') }}</td>
                     <td>{{ $psn->transaksi ? 'Sudah Bayar' : 'Belum Bayar' }}</td>
                 </tr>
             @endforeach

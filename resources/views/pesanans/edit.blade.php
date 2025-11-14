@@ -3,37 +3,19 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-10">
             <div class="card">
                 <div class="card-header">
                     <h4 class="mb-0">Edit Data Pesanan</h4>
                 </div>
 
                 <div class="card-body">
-                    <form action="{{ route('pesanans.update', $pesanan) }}" method="POST">
+                    <form action="{{ route('pesanans.update', $pesanan) }}" method="POST" id="pesananForm">
                         @csrf
                         @method('PUT')
 
                         <div class="mb-3">
-                            <label for="idmenu" class="form-label">Pilih Menu</label>
-                            <select class="form-select @error('idmenu') is-invalid @enderror" 
-                                    id="idmenu" name="idmenu" required>
-                                <option value="">-- Pilih Script --</option>
-                                @foreach($menus as $menu)
-                                    <option value="{{ $menu->idmenu }}" 
-                                            data-harga="{{ $menu->harga }}"
-                                            {{ old('idmenu', $pesanan->idmenu) == $menu->idmenu ? 'selected' : '' }}>
-                                        {{ $menu->namamenu }} - Rp {{ number_format($menu->harga, 0, ',', '.') }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('idmenu')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="idpelanggan" class="form-label">Pilih Pelanggan</label>
+                            <label for="idpelanggan" class="form-label">Pilih Pelanggan <span class="text-danger">*</span></label>
                             <select class="form-select @error('idpelanggan') is-invalid @enderror" 
                                     id="idpelanggan" name="idpelanggan" required>
                                 <option value="">-- Pilih Pelanggan --</option>
@@ -50,34 +32,25 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="jumlah" class="form-label">Jumlah</label>
-                            <input type="number" class="form-control @error('jumlah') is-invalid @enderror" 
-                                   id="jumlah" name="jumlah" value="{{ old('jumlah', $pesanan->jumlah) }}" 
-                                   min="1" required onchange="calculateTotal()">
-                            @error('jumlah')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label mb-0"><strong>Item Pesanan</strong></label>
+                                <button type="button" class="btn btn-sm btn-success" onclick="addItem()">
+                                    <i class="fas fa-plus"></i> Tambah Item
+                                </button>
+                            </div>
+                            <div id="items-container">
+                                <!-- Items will be added here dynamically -->
+                            </div>
+                            @error('items')
+                                <div class="text-danger small">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="mb-3">
                             <div class="alert alert-info">
-                                <label class="form-label"><strong>Total Harga:</strong></label>
+                                <label class="form-label mb-0"><strong>Total Harga:</strong></label>
                                 <div id="total-harga" class="fs-5 text-primary">Rp 0</div>
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="iduser" class="form-label">Penanggung Jawab</label>
-                            <select class="form-select @error('iduser') is-invalid @enderror" 
-                                    id="iduser" name="iduser" required>
-                                <option value="">-- Pilih User --</option>
-                                <option value="{{ auth()->user()->id }}" {{ old('iduser', $pesanan->iduser) == auth()->user()->id ? 'selected' : '' }}>
-                                    {{ auth()->user()->namauser ?? auth()->user()->name }}
-                                </option>
-                            </select>
-                            @error('iduser')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -85,7 +58,7 @@
                                 <i class="fas fa-arrow-left"></i> Kembali
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Update
+                                <i class="fas fa-save"></i> Update Pesanan
                             </button>
                         </div>
                     </form>
@@ -96,28 +69,106 @@
 </div>
 
 <script>
-function calculateTotal() {
-    const menuSelect = document.getElementById('idmenu');
-    const jumlahInput = document.getElementById('jumlah');
-    const totalElement = document.getElementById('total-harga');
+let itemCount = 0;
+const menus = @json($menus);
+const existingItems = @json($pesanan->detailPesanans->map(function($dp) { 
+    return ['idmenu' => $dp->idmenu, 'jumlah' => $dp->jumlah]; 
+}));
+
+function addItem(menuId = '', jumlah = 1) {
+    itemCount++;
+    const container = document.getElementById('items-container');
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'card mb-2 item-row';
+    itemDiv.id = `item-${itemCount}`;
+    
+    itemDiv.innerHTML = `
+        <div class="card-body">
+            <div class="row align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label">Menu</label>
+                    <select class="form-select item-menu" name="items[${itemCount}][idmenu]" required onchange="updateItemTotal(${itemCount})">
+                        <option value="">-- Pilih Menu --</option>
+                        ${menus.map(menu => `
+                            <option value="${menu.idmenu}" data-harga="${menu.harga}" ${menuId == menu.idmenu ? 'selected' : ''}>
+                                ${menu.namamenu} - Rp ${parseInt(menu.harga).toLocaleString('id-ID')}
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Jumlah</label>
+                    <input type="number" class="form-control item-jumlah" name="items[${itemCount}][jumlah]" 
+                           value="${jumlah}" min="1" required onchange="updateItemTotal(${itemCount}); calculateGrandTotal()">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Subtotal</label>
+                    <input type="text" class="form-control item-subtotal" readonly value="Rp 0">
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(${itemCount})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(itemDiv);
+    updateItemTotal(itemCount);
+    calculateGrandTotal();
+}
+
+function removeItem(id) {
+    const item = document.getElementById(`item-${id}`);
+    if (item) {
+        item.remove();
+        calculateGrandTotal();
+    }
+}
+
+function updateItemTotal(id) {
+    const item = document.getElementById(`item-${id}`);
+    if (!item) return;
+    
+    const menuSelect = item.querySelector('.item-menu');
+    const jumlahInput = item.querySelector('.item-jumlah');
+    const subtotalInput = item.querySelector('.item-subtotal');
     
     if (menuSelect.value && jumlahInput.value) {
         const harga = parseInt(menuSelect.selectedOptions[0].getAttribute('data-harga'));
         const jumlah = parseInt(jumlahInput.value);
-        const total = harga * jumlah;
-        totalElement.textContent = 'Rp ' + total.toLocaleString('id-ID');
+        const subtotal = harga * jumlah;
+        subtotalInput.value = 'Rp ' + subtotal.toLocaleString('id-ID');
     } else {
-        totalElement.textContent = 'Rp 0';
+        subtotalInput.value = 'Rp 0';
     }
+    
+    calculateGrandTotal();
 }
 
-// Event listeners
-document.getElementById('idmenu').addEventListener('change', calculateTotal);
-document.getElementById('jumlah').addEventListener('input', calculateTotal);
+function calculateGrandTotal() {
+    const items = document.querySelectorAll('.item-row');
+    let total = 0;
+    
+    items.forEach(item => {
+        const subtotalText = item.querySelector('.item-subtotal').value;
+        const subtotal = parseInt(subtotalText.replace(/[^\d]/g, '')) || 0;
+        total += subtotal;
+    });
+    
+    document.getElementById('total-harga').textContent = 'Rp ' + total.toLocaleString('id-ID');
+}
 
-// Initialize total on page load
+// Add existing items on page load
 document.addEventListener('DOMContentLoaded', function() {
-    calculateTotal();
+    if (existingItems.length > 0) {
+        existingItems.forEach(item => {
+            addItem(item.idmenu, item.jumlah);
+        });
+    } else {
+        addItem();
+    }
 });
 </script>
 @endsection

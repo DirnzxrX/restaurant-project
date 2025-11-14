@@ -51,7 +51,7 @@ class LaporanController extends Controller
      */
     public function transaksi(Request $request)
     {
-        $query = Transaksi::with(['pesanan.menu', 'pesanan.pelanggan']);
+        $query = Transaksi::with(['pesanan.detailPesanans.menu', 'pesanan.pelanggan']);
         
         if ($request->filled('start_date')) {
             $query->whereDate('created_at', '>=', $request->start_date);
@@ -72,7 +72,7 @@ class LaporanController extends Controller
      */
     public function pesanan(Request $request)
     {
-        $query = Pesanan::with(['menu', 'pelanggan', 'transaksi']);
+        $query = Pesanan::with(['detailPesanans.menu', 'pelanggan', 'transaksi']);
         
         if ($request->filled('start_date')) {
             $query->whereDate('created_at', '>=', $request->start_date);
@@ -98,7 +98,7 @@ class LaporanController extends Controller
     {
         switch ($type) {
             case 'transaksi':
-                $query = Transaksi::with(['pesanan.menu', 'pesanan.pelanggan']);
+                $query = Transaksi::with(['pesanan.detailPesanans.menu', 'pesanan.pelanggan']);
                 
                 if ($request->filled('start_date')) {
                     $query->whereDate('created_at', '>=', $request->start_date);
@@ -117,7 +117,7 @@ class LaporanController extends Controller
                 break;
                 
             case 'pesanan':
-                $query = Pesanan::with(['menu', 'pelanggan', 'transaksi']);
+                $query = Pesanan::with(['detailPesanans.menu', 'pelanggan', 'transaksi']);
                 
                 if ($request->filled('start_date')) {
                     $query->whereDate('created_at', '>=', $request->start_date);
@@ -146,7 +146,7 @@ class LaporanController extends Controller
     {
         switch ($type) {
             case 'transaksi':
-                $query = Transaksi::with(['pesanan.menu', 'pesanan.pelanggan']);
+                $query = Transaksi::with(['pesanan.detailPesanans.menu', 'pesanan.pelanggan']);
                 
                 if ($request->filled('start_date')) {
                     $query->whereDate('created_at', '>=', $request->start_date);
@@ -165,7 +165,7 @@ class LaporanController extends Controller
                 break;
                 
             case 'pesanan':
-                $query = Pesanan::with(['menu', 'pelanggan', 'transaksi']);
+                $query = Pesanan::with(['detailPesanans.menu', 'pelanggan', 'transaksi']);
                 
                 if ($request->filled('start_date')) {
                     $query->whereDate('created_at', '>=', $request->start_date);

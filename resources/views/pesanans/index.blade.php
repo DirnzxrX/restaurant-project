@@ -25,9 +25,8 @@
                             <thead>
                                 <tr>
                                     <th>ID Pesanan</th>
-                                    <th>Menu</th>
+                                    <th>Items</th>
                                     <th>Pelanggan</th>
-                                    <th>Jumlah</th>
                                     <th>Total Bayar</th>
                                     <th>Status</th>
                                     <th>Kasir/Waiter</th>
@@ -39,10 +38,19 @@
                                 @foreach($pesanans as $pesanan)
                                 <tr>
                                     <td>{{ $pesanan->idpesanan }}</td>
-                                    <td>{{ $pesanan->menu->namamenu }}</td>
+                                    <td>
+                                        @if($pesanan->detailPesanans->count() > 0)
+                                            <ul class="mb-0" style="padding-left: 20px;">
+                                                @foreach($pesanan->detailPesanans as $detail)
+                                                    <li>{{ $detail->menu->namamenu }} ({{ $detail->jumlah }}x)</li>
+                                                @endforeach
+                                            </ul>
+                                        @else
+                                            <span class="text-muted">Tidak ada item</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $pesanan->pelanggan->namapelanggan }}</td>
-                                    <td>{{ $pesanan->jumlah }}</td>
-                                    <td>Rp {{ number_format($pesanan->jumlah * $pesanan->menu->harga, 0, ',', '.') }}</td>
+                                    <td>Rp {{ number_format($pesanan->subtotal, 0, ',', '.') }}</td>
                                     <td>
                                         @if($pesanan->transaksis->count() > 0)
                                             <span class="badge bg-success">Sudah Lunas</span>

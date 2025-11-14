@@ -11,16 +11,14 @@ class Pesanan extends Model
     public $timestamps = true;
 
     protected $fillable = [
-        'idmenu',
         'idpelanggan',
-        'jumlah',
         'iduser',
     ];
 
     // Relationships
-    public function menu()
+    public function detailPesanans()
     {
-        return $this->belongsTo(Menu::class, 'idmenu');
+        return $this->hasMany(DetailPesanan::class, 'idpesanan');
     }
 
     public function pelanggan()
@@ -43,9 +41,11 @@ class Pesanan extends Model
         return $this->hasOne(Transaksi::class, 'idpesanan');
     }
 
-    // Accessor untuk subtotal
+    // Accessor untuk subtotal (total dari semua detail pesanan)
     public function getSubtotalAttribute()
     {
-        return $this->menu->harga * $this->jumlah;
+        return $this->detailPesanans->sum(function($detail) {
+            return $detail->menu->harga * $detail->jumlah;
+        });
     }
 }

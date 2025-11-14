@@ -54,9 +54,8 @@
                                 <tr>
                                     <th>ID Transaksi</th>
                                     <th>ID Pesanan</th>
-                                    <th>Menu</th>
+                                    <th>Items</th>
                                     <th>Pelanggan</th>
-                                    <th>Jumlah Item</th>
                                     <th>Total</th>
                                     <th>Bayar</th>
                                     <th>Kembalian</th>
@@ -69,9 +68,18 @@
                                 <tr>
                                     <td>{{ $transaksi->idtransaksi }}</td>
                                     <td>{{ $transaksi->idpesanan }}</td>
-                                    <td>{{ $transaksi->pesanan->menu->namamenu }}</td>
+                                    <td>
+                                        @if($transaksi->pesanan->detailPesanans->count() > 0)
+                                            <ul class="mb-0" style="padding-left: 20px;">
+                                                @foreach($transaksi->pesanan->detailPesanans as $detail)
+                                                    <li>{{ $detail->menu->namamenu }} ({{ $detail->jumlah }}x)</li>
+                                                @endforeach
+                                            </ul>
+                                        @else
+                                            <span class="text-muted">Tidak ada item</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $transaksi->pesanan->pelanggan->namapelanggan }}</td>
-                                    <td>{{ $transaksi->pesanan->jumlah }}</td>
                                     <td>Rp {{ number_format($transaksi->total, 0, ',', '.') }}</td>
                                     <td>Rp {{ number_format($transaksi->bayar, 0, ',', '.') }}</td>
                                     <td>Rp {{ number_format($transaksi->bayar - $transaksi->total, 0, ',', '.') }}</td>

@@ -40,8 +40,8 @@
                         <th>No</th>
                         <th>Tanggal</th>
                         <th>Pelanggan</th>
-                        <th>Menu</th>
-                        <th>Jumlah</th>
+                        <th>Items</th>
+                        <th>Total Harga</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -51,8 +51,18 @@
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ \Carbon\Carbon::parse($psn->created_at)->format('d/m/Y H:i') }}</td>
                             <td>{{ $psn->pelanggan->namapelanggan ?? '-' }}</td>
-                            <td>{{ $psn->menu->namamenu ?? '-' }}</td>
-                            <td>{{ $psn->jumlah }}</td>
+                            <td>
+                                @if($psn->detailPesanans->count() > 0)
+                                    <ul class="mb-0" style="padding-left: 20px;">
+                                        @foreach($psn->detailPesanans as $detail)
+                                            <li>{{ $detail->menu->namamenu ?? '-' }} ({{ $detail->jumlah }}x) - Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <span class="text-muted">Tidak ada item</span>
+                                @endif
+                            </td>
+                            <td class="text-end">Rp {{ number_format($psn->subtotal, 0, ',', '.') }}</td>
                             <td>
                                 @if($psn->transaksi)
                                     <span class="badge bg-success">Sudah Bayar</span>
