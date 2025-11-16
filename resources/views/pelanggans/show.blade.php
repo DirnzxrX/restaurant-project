@@ -58,8 +58,7 @@
                                 <thead>
                                     <tr>
                                         <th>ID Pesanan</th>
-                                        <th>Menu</th>
-                                        <th>Jumlah</th>
+                                        <th>Rincian Pesanan</th>
                                         <th>Tanggal</th>
                                     </tr>
                                 </thead>
@@ -67,8 +66,13 @@
                                     @foreach($pelanggan->pesanans as $pesanan)
                                     <tr>
                                         <td>{{ $pesanan->idpesanan }}</td>
-                                        <td>{{ $pesanan->menu->namamenu }}</td>
-                                        <td>{{ $pesanan->jumlah }}</td>
+                                        <td>
+                                            <ul>
+                                                @foreach ($pesanan->detailPesanans as $i)
+                                                    <li>{{ $i->menu->namamenu }}({{ $i->jumlah }})</li>                                                    
+                                                @endforeach
+                                            </ul>
+                                        </td>
                                         <td>{{ $pesanan->created_at->format('d/m/Y H:i') }}</td>
                                     </tr>
                                     @endforeach

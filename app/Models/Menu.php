@@ -16,8 +16,8 @@ class Menu extends Model
     ];
 
     // Relationships
-    public function pesanans()
+    public function detailPesanans()
     {
-        return $this->hasMany(Pesanan::class, 'idmenu');
+        return $this->hasMany(DetailPesanan::class, 'idmenu');
     }
 }

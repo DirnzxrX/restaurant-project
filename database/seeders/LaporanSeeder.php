@@ -8,6 +8,7 @@ use App\Models\Menu;
 use App\Models\Pesanan;
 use App\Models\Transaksi;
 use App\Models\User;
+use App\Models\DetailPesanan;
 
 class LaporanSeeder extends Seeder
 {
@@ -40,10 +41,14 @@ class LaporanSeeder extends Seeder
         ]);
 
         $pesanan = Pesanan::create([
-            'idmenu' => $menu->idmenu,
             'idpelanggan' => $pelanggan->idpelanggan,
-            'jumlah' => 2,
             'iduser' => $user->id
+        ]);
+
+        DetailPesanan::create([
+            'idpesanan' => $pesanan->idpesanan,
+            'idmenu' => $menu->idmenu,
+            'jumlah' => 2,
         ]);
 
         $transaksi = Transaksi::create([
@@ -66,10 +71,14 @@ class LaporanSeeder extends Seeder
         ]);
 
         $pesanan2 = Pesanan::create([
-            'idmenu' => $menu2->idmenu,
             'idpelanggan' => $pelanggan2->idpelanggan,
-            'jumlah' => 1,
             'iduser' => $user->id
+        ]);
+
+        DetailPesanan::create([
+            'idpesanan' => $pesanan2->idpesanan,
+            'idmenu' => $menu2->idmenu,
+            'jumlah' => 1,
         ]);
 
         echo "Sample data created successfully!\n";
